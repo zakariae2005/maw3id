@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -8,121 +8,32 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus, Edit2, Trash2, Clock, DollarSign, Briefcase, Search, Settings } from "lucide-react"
-import { cn } from '@/lib/utils';
+import { Plus, Edit2, Trash2, DollarSign, Briefcase, Search, Settings } from "lucide-react"
+import { cn } from '@/lib/utils'
+import { useService } from '@/store/useService'
 
-interface Service {
+// Generate a random color for each service card
+const colorOptions = [
+  "bg-gradient-to-r from-orange-100 to-orange-200 border-orange-300 text-orange-800",
+  "bg-gradient-to-r from-purple-100 to-purple-200 border-purple-300 text-purple-800",
+  "bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300 text-yellow-800",
+  "bg-gradient-to-r from-green-100 to-green-200 border-green-300 text-green-800",
+  "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-300 text-blue-800",
+  "bg-gradient-to-r from-indigo-100 to-indigo-200 border-indigo-300 text-indigo-800",
+  "bg-gradient-to-r from-pink-100 to-pink-200 border-pink-300 text-pink-800",
+  "bg-gradient-to-r from-teal-100 to-teal-200 border-teal-300 text-teal-800",
+]
+
+type Service = {
   id: string
   name: string
-  description: string
-  duration: number // in minutes
+  description: string | null
   price: number
-  category: string
-  color: string
-}
-
-const colorOptions = [
-  { value: "bg-gradient-to-r from-orange-100 to-orange-200 border-orange-300 text-orange-800", label: "Orange" },
-  { value: "bg-gradient-to-r from-purple-100 to-purple-200 border-purple-300 text-purple-800", label: "Purple" },
-  { value: "bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300 text-yellow-800", label: "Yellow" },
-  { value: "bg-gradient-to-r from-green-100 to-green-200 border-green-300 text-green-800", label: "Green" },
-  { value: "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-300 text-blue-800", label: "Blue" },
-  { value: "bg-gradient-to-r from-indigo-100 to-indigo-200 border-indigo-300 text-indigo-800", label: "Indigo" },
-  { value: "bg-gradient-to-r from-pink-100 to-pink-200 border-pink-300 text-pink-800", label: "Pink" },
-  { value: "bg-gradient-to-r from-teal-100 to-teal-200 border-teal-300 text-teal-800", label: "Teal" },
-]
-
-const categoryOptions = [
-  "Medical",
-  "Dental",
-  "Therapy",
-  "Consultation",
-  "Emergency",
-  "Routine",
-  "Specialist",
-  "General",
-]
-
-// Mock data functions (replace with your actual API calls)
-const getServices = async (): Promise<Service[]> => {
-  return [
-    {
-      id: "1",
-      name: "Health Appointment",
-      description: "Comprehensive health checkup with physical examination",
-      duration: 60,
-      price: 150,
-      category: "Medical",
-      color: "bg-gradient-to-r from-orange-100 to-orange-200 border-orange-300 text-orange-800",
-    },
-    {
-      id: "2",
-      name: "General Checkup",
-      description: "Routine health screening and basic medical assessment",
-      duration: 30,
-      price: 80,
-      category: "Routine",
-      color: "bg-gradient-to-r from-purple-100 to-purple-200 border-purple-300 text-purple-800",
-    },
-    {
-      id: "3",
-      name: "Consultation",
-      description: "Professional medical consultation and advice",
-      duration: 45,
-      price: 120,
-      category: "Consultation",
-      color: "bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300 text-yellow-800",
-    },
-    {
-      id: "4",
-      name: "Lab Work",
-      description: "Laboratory tests and blood work analysis",
-      duration: 20,
-      price: 60,
-      category: "Medical",
-      color: "bg-gradient-to-r from-green-100 to-green-200 border-green-300 text-green-800",
-    },
-    {
-      id: "5",
-      name: "Physical Therapy",
-      description: "Rehabilitation and physical therapy session",
-      duration: 90,
-      price: 200,
-      category: "Therapy",
-      color: "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-300 text-blue-800",
-    },
-    {
-      id: "6",
-      name: "Dental Cleaning",
-      description: "Professional dental cleaning and oral hygiene",
-      duration: 45,
-      price: 100,
-      category: "Dental",
-      color: "bg-gradient-to-r from-indigo-100 to-indigo-200 border-indigo-300 text-indigo-800",
-    },
-  ]
-}
-
-const addService = async (service: Omit<Service, "id">): Promise<void> => {
-  // Mock implementation
-  console.log("Adding service:", service)
-}
-
-const updateService = async (id: string, service: Partial<Service>): Promise<void> => {
-  // Mock implementation
-  console.log("Updating service:", id, service)
-}
-
-const deleteService = async (id: string): Promise<void> => {
-  // Mock implementation
-  console.log("Deleting service:", id)
 }
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { services, isLoading, error, fetchServices, createService, updateService, deleteService } = useService()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -133,18 +44,8 @@ export default function ServicesPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    duration: "30",
     price: "",
-    category: "",
-    color: colorOptions[0].value,
   })
-
-  const fetchServices = useCallback(async () => {
-    setIsLoading(true)
-    const fetchedServices = await getServices()
-    setServices(fetchedServices)
-    setIsLoading(false)
-  }, [])
 
   useEffect(() => {
     fetchServices()
@@ -155,10 +56,7 @@ export default function ServicesPage() {
     setFormData({
       name: "",
       description: "",
-      duration: "30",
       price: "",
-      category: "",
-      color: colorOptions[0].value,
     })
     setIsFormOpen(true)
   }
@@ -167,35 +65,33 @@ export default function ServicesPage() {
     setEditingService(service)
     setFormData({
       name: service.name,
-      description: service.description,
-      duration: service.duration.toString(),
+      description: service.description || "",
       price: service.price.toString(),
-      category: service.category,
-      color: service.color,
     })
     setIsFormOpen(true)
   }
 
   const handleSaveService = async () => {
-    const serviceData = {
-      name: formData.name,
-      description: formData.description,
-      duration: parseInt(formData.duration),
-      price: parseFloat(formData.price),
-      category: formData.category,
-      color: formData.color,
-    }
+    try {
+      const serviceData = {
+    name: formData.name,
+    description: formData.description,
+    price: parseFloat(formData.price),
+  }
 
-    if (editingService) {
-      await updateService(editingService.id, { ...serviceData, id: editingService.id })
-      setServices(prev => prev.map(s => s.id === editingService.id ? { ...serviceData, id: editingService.id } : s))
-    } else {
-      const newService = { ...serviceData, id: Date.now().toString() }
-      await addService(serviceData)
-      setServices(prev => [...prev, newService])
+  if (editingService) {
+    await updateService(editingService.id, serviceData)
+  } else {
+    await createService(serviceData)
+  }
+
+  setIsFormOpen(false)
+  setFormData({ name: "", description: "", price: "" })
+  setEditingService(null)
+    } catch (error) {
+      console.error("Failed to save service:", error)
+      // Error is already handled in the store and displayed in UI
     }
-    
-    setIsFormOpen(false)
   }
 
   const handleDeleteService = (service: Service) => {
@@ -205,18 +101,42 @@ export default function ServicesPage() {
 
   const confirmDeleteService = async () => {
     if (serviceToDelete) {
-      await deleteService(serviceToDelete.id)
-      setServices(prev => prev.filter(s => s.id !== serviceToDelete.id))
-      setIsDeleteDialogOpen(false)
-      setServiceToDelete(null)
+      try {
+        // Call deleteService from Zustand store
+        await deleteService(serviceToDelete.id)
+        setIsDeleteDialogOpen(false)
+        setServiceToDelete(null)
+      } catch (error) {
+        console.error("Failed to delete service:", error)
+        // Error is already handled in the store
+      }
     }
   }
 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (service.description && service.description.toLowerCase().includes(searchTerm.toLowerCase()))
   )
+
+  // Function to get random color for each service
+ const getServiceColor = (serviceId: string) => {
+    const index = serviceId.length % colorOptions.length
+    return colorOptions[index]
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={fetchServices} className="bg-blue-500 hover:bg-blue-600">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-900">
@@ -276,7 +196,7 @@ export default function ServicesPage() {
                 key={service.id}
                 className={cn(
                   "p-4 rounded-xl border-2 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1",
-                  service.color
+                  getServiceColor(service.id)
                 )}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -286,9 +206,6 @@ export default function ServicesPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg leading-tight">{service.name}</h3>
-                      <span className="text-xs px-2 py-1 bg-white/50 rounded-full font-medium">
-                        {service.category}
-                      </span>
                     </div>
                   </div>
                   <div className="flex gap-1">
@@ -297,6 +214,7 @@ export default function ServicesPage() {
                       size="icon"
                       onClick={() => handleEditService(service)}
                       className="h-8 w-8 hover:bg-white/50 rounded-full transition-all duration-200"
+                      disabled={isLoading}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -305,24 +223,21 @@ export default function ServicesPage() {
                       size="icon"
                       onClick={() => handleDeleteService(service)}
                       className="h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-full transition-all duration-200"
+                      disabled={isLoading}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
-                <p className="text-sm opacity-80 mb-4 line-clamp-2">{service.description}</p>
+                <p className="text-sm opacity-80 mb-4 line-clamp-2">
+                  {service.description || "No description provided"}
+                </p>
 
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-sm">
-                      <Clock className="h-4 w-4" />
-                      <span className="font-medium">{service.duration}m</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="font-bold">${service.price}</span>
-                    </div>
+                  <div className="flex items-center gap-1 text-sm">
+                    <DollarSign className="h-4 w-4" />
+                    <span className="font-bold">${service.price}</span>
                   </div>
                 </div>
               </Card>
@@ -364,6 +279,7 @@ export default function ServicesPage() {
             onClick={handleAddServiceClick}
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 z-50 border-2 border-white dark:border-gray-800"
             size="icon"
+            disabled={isLoading}
           >
             <Plus className="h-6 w-6 text-white" />
           </Button>
@@ -387,6 +303,7 @@ export default function ServicesPage() {
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
+                disabled={isLoading}
               />
             </div>
 
@@ -400,106 +317,46 @@ export default function ServicesPage() {
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200 min-h-[80px]"
+                disabled={isLoading}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  Duration (min)
-                </Label>
-                <Select
-                  value={formData.duration}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
-                >
-                  <SelectTrigger className="bg-white/50 dark:bg-gray-800/50 border-blue-200">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-blue-600" />
-                  Price ($)
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Category
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-blue-600" />
+                Price ($)
               </Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger className="bg-white/50 dark:bg-gray-800/50 border-blue-200">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryOptions.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Color Theme
-              </Label>
-              <div className="grid grid-cols-4 gap-2">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
-                    className={cn(
-                      "w-full h-12 rounded-lg border-2 transition-all duration-200",
-                      color.value,
-                      formData.color === color.value 
-                        ? "ring-2 ring-blue-500 ring-offset-2" 
-                        : "hover:scale-105"
-                    )}
-                  >
-                    <span className="sr-only">{color.label}</span>
-                  </button>
-                ))}
-              </div>
+              <Input
+                type="number"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
+                disabled={isLoading}
+              />
             </div>
 
             <div className="flex gap-3 pt-4">
               <Button 
                 variant="outline"
-                onClick={() => setIsFormOpen(false)}
+                onClick={() => {
+                  setIsFormOpen(false)
+                  setEditingService(null)
+                  setFormData({ name: "", description: "", price: "" })
+                }}
                 className="flex-1 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all duration-200"
+                disabled={isLoading}
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSaveService}
                 className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-                disabled={!formData.name || !formData.category || !formData.price}
+                disabled={!formData.name || !formData.price || isLoading}
               >
-                {editingService ? "Update" : "Create"} Service
+                {isLoading ? "Saving..." : editingService ? "Update" : "Create"} Service
               </Button>
             </div>
           </div>
@@ -519,14 +376,18 @@ export default function ServicesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <AlertDialogCancel 
+              className="border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              disabled={isLoading}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDeleteService}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+              disabled={isLoading}
             >
-              Delete
+              {isLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
