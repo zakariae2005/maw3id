@@ -106,17 +106,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 }
 
 // GET Single Service (optional, for future use)
-export async function GET(
-    req: Request,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions)
         if (!session?.user?.email) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
         }
 
-        const { id } = params
+        const { id } = await params
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
