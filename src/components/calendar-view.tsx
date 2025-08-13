@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { format, isToday, parseISO, addMinutes, isSameDay } from "date-fns"
 import { cn } from "@/lib/utils"

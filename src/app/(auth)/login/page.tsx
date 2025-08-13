@@ -30,9 +30,15 @@ interface FormData {
   password: string;
 }
 
+interface User {
+  id: string;
+  email: string;
+  businessName?: string;
+}
+
 interface AuthResponse {
   message?: string;
-  user?: any;
+  user?: User;
   error?: string;
 }
 
