@@ -173,7 +173,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="flex min-h-screen">
-        {/* Left Panel - Branding & Benefits */}
+        
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 to-slate-800 p-12 flex-col justify-between text-white relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
