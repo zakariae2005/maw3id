@@ -1,9 +1,9 @@
+// components/mobile-schedule-calendar.tsx
 "use client"
 
 import * as React from "react"
-import { useState, useMemo, useEffect } from "react"
-import { format, startOfDay, addDays, subDays, setHours, setMinutes, getHours } from "date-fns"
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Settings, Plus, Clock, User, Briefcase, MoreHorizontal } from "lucide-react"
+import { format, setHours, getHours, startOfDay } from "date-fns"
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Settings, Plus, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -15,185 +15,43 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
-
-// Import your stores
-import { useAppointment } from "@/store/useAppointment"
-import { useService } from "@/store/useService"
-
-interface CalendarAppointment {
-  id: string
-  clientName: string
-  serviceName: string
-  startTime: Date
-  endTime: Date
-  color: string
-  serviceId: string
-}
-
-const colorOptions = [
-  "bg-blue-50 border-blue-200 text-blue-900",
-  "bg-emerald-50 border-emerald-200 text-emerald-900",
-  "bg-amber-50 border-amber-200 text-amber-900",
-  "bg-purple-50 border-purple-200 text-purple-900",
-  "bg-rose-50 border-rose-200 text-rose-900",
-  "bg-teal-50 border-teal-200 text-teal-900",
-  "bg-indigo-50 border-indigo-200 text-indigo-900",
-  "bg-orange-50 border-orange-200 text-orange-900",
-]
+import { useCalendarLogic } from "@/hooks/useCalendarLogic"
 
 export default function MobileScheduleCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()))
-  const [workingHoursStart, setWorkingHoursStart] = useState<number>(9)
-  const [workingHoursEnd, setWorkingHoursEnd] = useState<number>(18)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const { toast } = useToast()
-
-  // Store hooks
-  const { 
-    appointments, 
-    isLoading: appointmentsLoading, 
-    error: appointmentsError,
-    fetchAppointments, 
-    createAppointment 
-  } = useAppointment()
-
-  const { 
-    services, 
-    isLoading: servicesLoading, 
-    error: servicesError,
-    fetchServices 
-  } = useService()
-
-  // Form state
-  const [newAppointment, setNewAppointment] = useState({
-    clientName: "",
-    serviceId: "",
-    appointmentDate: selectedDate,
-    startHour: "9",
-    startMinute: "0",
-    duration: "30", // in minutes
-  })
-
-  // Load data on mount
-  useEffect(() => {
-    fetchAppointments()
-    fetchServices()
-  }, [])
-
-  // Convert backend appointments to calendar format
-  const calendarAppointments: CalendarAppointment[] = useMemo(() => {
-    return appointments.map((apt, index) => {
-      const startTime = new Date(apt.startTime)
-      const endTime = new Date(startTime.getTime() + (apt.duration || 30) * 60000)
-      const colorIndex = index % colorOptions.length
-      
-      return {
-        id: apt.id,
-        clientName: apt.clientName,
-        serviceName: apt.service.name,
-        startTime,
-        endTime,
-        color: colorOptions[colorIndex],
-        serviceId: apt.serviceId
-      }
-    })
-  }, [appointments])
-
-  const handlePreviousDay = () => {
-    setSelectedDate((prev) => subDays(prev, 1))
-  }
-
-  const handleNextDay = () => {
-    setSelectedDate((prev) => addDays(prev, 1))
-  }
-
-  const handleToday = () => {
-    setSelectedDate(startOfDay(new Date()))
-  }
-
-  const handleCreateAppointment = async () => {
-    try {
-      if (!newAppointment.clientName || !newAppointment.serviceId) {
-        toast({
-          title: "Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const startTime = setMinutes(
-        setHours(newAppointment.appointmentDate, parseInt(newAppointment.startHour)),
-        parseInt(newAppointment.startMinute)
-      )
-
-      await createAppointment({
-        clientName: newAppointment.clientName,
-        serviceId: newAppointment.serviceId,
-        startTime,
-        duration: parseInt(newAppointment.duration)
-      })
-
-      setNewAppointment({
-        clientName: "",
-        serviceId: "",
-        appointmentDate: selectedDate,
-        startHour: "9",
-        startMinute: "0",
-        duration: "30",
-      })
-      setIsCreateDialogOpen(false)
-
-      toast({
-        title: "Success",
-        description: "Appointment created successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create appointment",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const generateTimeSlots = (startHour: number, endHour: number) => {
-    const slots = []
-    for (let hour = startHour; hour < endHour; hour++) {
-      slots.push(setMinutes(setHours(selectedDate, hour), 0))
-    }
-    return slots
-  }
-
-  const timeSlots = useMemo(
-    () => generateTimeSlots(workingHoursStart, workingHoursEnd),
-    [selectedDate, workingHoursStart, workingHoursEnd],
-  )
-
-  const appointmentsByHour = useMemo(() => {
-    const groups: { [key: number]: CalendarAppointment[] } = {}
-    calendarAppointments
-      .filter(app => format(app.startTime, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'))
-      .forEach((app) => {
-        const hour = getHours(app.startTime)
-        if (!groups[hour]) {
-          groups[hour] = []
-        }
-        groups[hour].push(app)
-      })
+  const {
+    // State
+    selectedDate,
+    setSelectedDate,
+    workingHoursStart,
+    setWorkingHoursStart,
+    workingHoursEnd,
+    setWorkingHoursEnd,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    newAppointment,
+    setNewAppointment,
     
-    Object.keys(groups).forEach((hour) => {
-      groups[Number(hour)].sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
-    })
-    return groups
-  }, [calendarAppointments, selectedDate])
-
-  const todayAppointments = calendarAppointments.filter(app => 
-    format(app.startTime, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
-  )
+    // Store data
+    services,
+    appointmentsLoading,
+    servicesLoading,
+    appointmentsError,
+    servicesError,
+    
+    // Computed data
+    timeSlots,
+    appointmentsByHour,
+    todayAppointments,
+    
+    // Handlers
+    handlePreviousDay,
+    handleNextDay,
+    handleToday,
+    handleCreateAppointment,
+    handleRetry,
+  } = useCalendarLogic({ isWeekView: false })
 
   // Show loading state
   if (appointmentsLoading || servicesLoading) {
@@ -214,10 +72,7 @@ export default function MobileScheduleCalendar() {
         <div className="text-center">
           <p className="text-red-600 mb-2">Error loading data</p>
           <p className="text-sm text-slate-600">{appointmentsError || servicesError}</p>
-          <Button onClick={() => {
-            fetchAppointments()
-            fetchServices()
-          }} className="mt-4">
+          <Button onClick={handleRetry} className="mt-4">
             Retry
           </Button>
         </div>

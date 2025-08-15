@@ -1,21 +1,17 @@
+// components/desktop-schedule-calendar.tsx
 "use client"
 
 import * as React from "react"
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useRef } from "react"
 import {
   format,
-  startOfWeek,
-  addDays,
-  subDays,
   setHours,
-  setMinutes,
   getHours,
   getMinutes,
   isSameDay,
-  isWithinInterval,
   startOfDay,
 } from "date-fns"
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Settings, Plus, Clock, User, Briefcase, Search, Info } from "lucide-react"
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Settings, Plus, Search } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,192 +23,55 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { useToast } from "@/hooks/use-toast"
-
-// Import your stores
-import { useAppointment } from "@/store/useAppointment"
-import { useService } from "@/store/useService"
-
-interface CalendarAppointment {
-  id: string
-  clientName: string
-  serviceName: string
-  startTime: Date
-  endTime: Date
-  color: string
-  serviceId: string
-}
-
-const colorOptions = [
-  "bg-blue-50 border-blue-200 text-blue-900",
-  "bg-emerald-50 border-emerald-200 text-emerald-900",
-  "bg-amber-50 border-amber-200 text-amber-900",
-  "bg-purple-50 border-purple-200 text-purple-900",
-  "bg-rose-50 border-rose-200 text-rose-900",
-  "bg-teal-50 border-teal-200 text-teal-900",
-  "bg-indigo-50 border-indigo-200 text-indigo-900",
-  "bg-orange-50 border-orange-200 text-orange-900",
-]
+import { useCalendarLogic } from "@/hooks/useCalendarLogic"
 
 export default function ProfessionalDesktopCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }))
-  const [workingHoursStart, setWorkingHoursStart] = useState<number>(8)
-  const [workingHoursEnd, setWorkingHoursEnd] = useState<number>(20)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const scheduleRef = useRef<HTMLDivElement>(null)
-  const { toast } = useToast()
-
-  // Store hooks
-  const { 
-    appointments, 
-    isLoading: appointmentsLoading, 
-    error: appointmentsError,
-    fetchAppointments, 
-    createAppointment 
-  } = useAppointment()
-
-  const { 
-    services, 
-    isLoading: servicesLoading, 
-    error: servicesError,
-    fetchServices 
-  } = useService()
-
-  // Form state
-  const [newAppointment, setNewAppointment] = useState({
-    clientName: "",
-    serviceId: "",
-    appointmentDate: new Date(),
-    startHour: "9",
-    startMinute: "0",
-    duration: "30", // in minutes
-  })
-
-  // Load data on mount
-  useEffect(() => {
-    fetchAppointments()
-    fetchServices()
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Convert backend appointments to calendar format
-  const calendarAppointments: CalendarAppointment[] = useMemo(() => {
-    return appointments.map((apt, index) => {
-      const startTime = new Date(apt.startTime)
-      const endTime = new Date(startTime.getTime() + (apt.duration || 30) * 60000)
-      const colorIndex = index % colorOptions.length
-      
-      return {
-        id: apt.id,
-        clientName: apt.clientName,
-        serviceName: apt.service.name,
-        startTime,
-        endTime,
-        color: colorOptions[colorIndex],
-        serviceId: apt.serviceId
-      }
-    })
-  }, [appointments])
-
-  const weekDays = useMemo(() => {
-    const start = startOfWeek(selectedDate, { weekStartsOn: 1 })
-    return Array.from({ length: 7 }).map((_, i) => addDays(start, i))
-  }, [selectedDate])
-
-  const timeSlots = useMemo(() => {
-    const slots = []
-    for (let hour = workingHoursStart; hour < workingHoursEnd; hour++) {
-      slots.push(setMinutes(setHours(new Date(), hour), 0))
-    }
-    return slots
-  }, [workingHoursStart, workingHoursEnd])
-
-  const handlePreviousWeek = () => {
-    setSelectedDate((prev) => subDays(prev, 7))
-  }
-
-  const handleNextWeek = () => {
-    setSelectedDate((prev) => addDays(prev, 7))
-  }
-
-  const handleToday = () => {
-    setSelectedDate(startOfWeek(new Date(), { weekStartsOn: 1 }))
-  }
-
-  const handleCreateAppointment = async () => {
-    try {
-      if (!newAppointment.clientName || !newAppointment.serviceId) {
-        toast({
-          title: "Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const startTime = setMinutes(
-        setHours(newAppointment.appointmentDate, parseInt(newAppointment.startHour)),
-        parseInt(newAppointment.startMinute)
-      )
-
-      await createAppointment({
-        clientName: newAppointment.clientName,
-        serviceId: newAppointment.serviceId,
-        startTime,
-        duration: parseInt(newAppointment.duration)
-      })
-
-      setNewAppointment({
-        clientName: "",
-        serviceId: "",
-        appointmentDate: new Date(),
-        startHour: "9",
-        startMinute: "0",
-        duration: "30",
-      })
-      setIsCreateDialogOpen(false)
-
-      toast({
-        title: "Success",
-        description: "Appointment created successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create appointment",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const getAppointmentPosition = (appointment: CalendarAppointment, slotTime: Date) => {
-    const appointmentMinutes = getMinutes(appointment.startTime)
-    const slotMinutes = getMinutes(slotTime)
+  
+  const {
+    // State
+    selectedDate,
+    setSelectedDate,
+    workingHoursStart,
+    setWorkingHoursStart,
+    workingHoursEnd,
+    setWorkingHoursEnd,
+    currentTime,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    newAppointment,
+    setNewAppointment,
     
-    // Position within the hour slot (60px height)
-    const minuteOffset = (appointmentMinutes - slotMinutes) * (60 / 60) // 1px per minute
-    const duration = (appointment.endTime.getTime() - appointment.startTime.getTime()) / (1000 * 60) // duration in minutes
-    const height = Math.max(20, Math.min(60, duration)) // Min 20px, max 60px height
+    // Store data
+    services,
+    appointmentsLoading,
+    servicesLoading,
+    appointmentsError,
+    servicesError,
     
-    return { 
-      top: `${Math.max(0, minuteOffset)}px`, 
-      height: `${height}px` 
-    }
-  }
+    // Computed data
+    calendarAppointments,
+    weekDays,
+    timeSlots,
+    
+    // Handlers
+    handlePreviousWeek,
+    handleNextWeek,
+    handleToday,
+    handleCreateAppointment,
+    handleRetry,
+    
+    // Utility functions
+    getAppointmentPosition,
+    getCurrentTimeLinePosition,
+  } = useCalendarLogic({ isWeekView: true })
 
   const currentHour = getHours(currentTime)
   const currentMinute = getMinutes(currentTime)
-  const currentLineTop = ((currentHour * 60 + currentMinute - workingHoursStart * 60) / 60) * 60
+  const currentLineTop = getCurrentTimeLinePosition()
 
   // Show loading state
   if (appointmentsLoading || servicesLoading) {
@@ -233,10 +92,7 @@ export default function ProfessionalDesktopCalendar() {
         <div className="text-center">
           <p className="text-red-600 mb-2">Error loading data</p>
           <p className="text-sm text-slate-600">{appointmentsError || servicesError}</p>
-          <Button onClick={() => {
-            fetchAppointments()
-            fetchServices()
-          }} className="mt-4">
+          <Button onClick={handleRetry} className="mt-4">
             Retry
           </Button>
         </div>
@@ -646,7 +502,7 @@ export default function ProfessionalDesktopCalendar() {
                                   <Card
                                     key={app.id}
                                     className={cn(
-                                      "absolute left-1 right-1 p-2 border cursor-pointer hover:shadow-md transition-all duration-150 rounded-md z-10",
+                                      " min-h-full p-1 border cursor-pointer hover:shadow-md transition-all duration-150 rounded-md z-10",
                                       app.color,
                                     )}
                                     style={{ top, height }}
@@ -660,7 +516,7 @@ export default function ProfessionalDesktopCalendar() {
                                           {format(app.startTime, "h:mm a")}
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-1 mt-1">
+                                      <div className="flex items-center gap-1 mb-1">
                                         <Avatar className="h-3 w-3">
                                           <AvatarFallback className="text-xs font-semibold">
                                             {app.clientName.split(' ').map(n => n[0]).join('').substring(0, 2)}
