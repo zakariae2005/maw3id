@@ -9,20 +9,20 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus, Edit2, Trash2, DollarSign, Briefcase, Search, Settings } from "lucide-react"
+import { Plus, Edit2, Trash2, DollarSign, Briefcase, Search, Settings, MoreVertical } from "lucide-react"
 import { cn } from '@/lib/utils'
 import { useService } from '@/store/useService'
 
-// Generate a random color for each service card
+// Professional color scheme for service cards
 const colorOptions = [
-  "bg-gradient-to-r from-orange-100 to-orange-200 border-orange-300 text-orange-800",
-  "bg-gradient-to-r from-purple-100 to-purple-200 border-purple-300 text-purple-800",
-  "bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300 text-yellow-800",
-  "bg-gradient-to-r from-green-100 to-green-200 border-green-300 text-green-800",
-  "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-300 text-blue-800",
-  "bg-gradient-to-r from-indigo-100 to-indigo-200 border-indigo-300 text-indigo-800",
-  "bg-gradient-to-r from-pink-100 to-pink-200 border-pink-300 text-pink-800",
-  "bg-gradient-to-r from-teal-100 to-teal-200 border-teal-300 text-teal-800",
+  "bg-blue-50 border-blue-200 text-blue-900",
+  "bg-emerald-50 border-emerald-200 text-emerald-900",
+  "bg-amber-50 border-amber-200 text-amber-900",
+  "bg-purple-50 border-purple-200 text-purple-900",
+  "bg-rose-50 border-rose-200 text-rose-900",
+  "bg-teal-50 border-teal-200 text-teal-900",
+  "bg-indigo-50 border-indigo-200 text-indigo-900",
+  "bg-orange-50 border-orange-200 text-orange-900",
 ]
 
 type Service = {
@@ -74,23 +74,22 @@ export default function ServicesPage() {
   const handleSaveService = async () => {
     try {
       const serviceData = {
-    name: formData.name,
-    description: formData.description,
-    price: parseFloat(formData.price),
-  }
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+      }
 
-  if (editingService) {
-    await updateService(editingService.id, serviceData)
-  } else {
-    await createService(serviceData)
-  }
+      if (editingService) {
+        await updateService(editingService.id, serviceData)
+      } else {
+        await createService(serviceData)
+      }
 
-  setIsFormOpen(false)
-  setFormData({ name: "", description: "", price: "" })
-  setEditingService(null)
+      setIsFormOpen(false)
+      setFormData({ name: "", description: "", price: "" })
+      setEditingService(null)
     } catch (error) {
       console.error("Failed to save service:", error)
-      // Error is already handled in the store and displayed in UI
     }
   }
 
@@ -102,13 +101,11 @@ export default function ServicesPage() {
   const confirmDeleteService = async () => {
     if (serviceToDelete) {
       try {
-        // Call deleteService from Zustand store
         await deleteService(serviceToDelete.id)
         setIsDeleteDialogOpen(false)
         setServiceToDelete(null)
       } catch (error) {
         console.error("Failed to delete service:", error)
-        // Error is already handled in the store
       }
     }
   }
@@ -118,19 +115,19 @@ export default function ServicesPage() {
     (service.description && service.description.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  // Function to get random color for each service
- const getServiceColor = (serviceId: string) => {
+  // Function to get consistent color for each service
+  const getServiceColor = (serviceId: string) => {
     const index = serviceId.length % colorOptions.length
     return colorOptions[index]
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={fetchServices} className="bg-blue-500 hover:bg-blue-600">
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="text-center p-8 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Services</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">{error}</p>
+          <Button onClick={fetchServices} className="bg-slate-900 hover:bg-slate-800 text-white">
             Try Again
           </Button>
         </div>
@@ -139,131 +136,169 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-900">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          Services
-        </h1>
-        <div className="flex items-center gap-2">
-          {/* Search */}
-          <div className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search services..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-64 bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
-            />
+    <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Professional Header */}
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                Services
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Manage your service offerings and pricing
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative hidden sm:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search services..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-80 h-9 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:border-slate-400 focus:ring-slate-400"
+                />
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            aria-label="Settings"
-            className="hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-full transition-all duration-200"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+
+          {/* Mobile Search */}
+          <div className="sm:hidden mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search services..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-9 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Mobile Search */}
-      <div className="sm:hidden p-4 bg-white/50 dark:bg-gray-800/50 border-b">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search services..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
-          />
+      {/* Stats Bar */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3">
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="text-slate-600 dark:text-slate-400">
+              {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
+            </span>
+          </div>
+          {filteredServices.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              <span className="text-slate-600 dark:text-slate-400">
+                Average: ${(filteredServices.reduce((sum, s) => sum + s.price, 0) / filteredServices.length).toFixed(0)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-6">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading services...</p>
+              <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Loading services...</p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-24">
             {filteredServices.map((service) => (
               <Card
                 key={service.id}
                 className={cn(
-                  "p-4 rounded-xl border-2 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1",
+                  "p-4 border hover:shadow-md transition-all duration-200 cursor-pointer",
                   getServiceColor(service.id)
                 )}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
-                      <Briefcase className="h-5 w-5" />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/60 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="h-4 w-4" />
                     </div>
-                    <div>
-                      <h3 className="font-bold text-lg leading-tight">{service.name}</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm truncate">{service.name}</h3>
                     </div>
                   </div>
-                  <div className="flex gap-1">
+                  
+                  <div className="flex items-center gap-1 ml-2">
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
                       onClick={() => handleEditService(service)}
-                      className="h-8 w-8 hover:bg-white/50 rounded-full transition-all duration-200"
+                      className="h-7 w-7 p-0 hover:bg-white/60"
                       disabled={isLoading}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
                       onClick={() => handleDeleteService(service)}
-                      className="h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-full transition-all duration-200"
+                      className="h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600"
                       disabled={isLoading}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
 
-                <p className="text-sm opacity-80 mb-4 line-clamp-2">
+                <p className="text-xs opacity-75 mb-3 line-clamp-2 leading-relaxed">
                   {service.description || "No description provided"}
                 </p>
 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1 text-sm">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="font-bold">${service.price}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    <span className="font-semibold text-sm">{service.price.toFixed(2)}</span>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-white/60"
+                  >
+                    <MoreVertical className="h-3 w-3" />
+                  </Button>
                 </div>
               </Card>
             ))}
 
             {filteredServices.length === 0 && !isLoading && (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-indigo-200 rounded-full flex items-center justify-center mb-4">
-                  <Briefcase className="h-8 w-8 text-blue-600" />
+              <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                  <Briefcase className="h-8 w-8 text-slate-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
                   {searchTerm ? "No services found" : "No services yet"}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-sm">
                   {searchTerm 
-                    ? "Try adjusting your search terms" 
-                    : "Create your first service to get started"
+                    ? "Try adjusting your search terms to find what you're looking for" 
+                    : "Get started by creating your first service offering"
                   }
                 </p>
                 {!searchTerm && (
                   <Button 
                     onClick={handleAddServiceClick}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white transition-all duration-200"
+                    className="bg-slate-900 hover:bg-slate-800 text-white"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Service
+                    Create Service
                   </Button>
                 )}
               </div>
@@ -272,29 +307,27 @@ export default function ServicesPage() {
         )}
       </ScrollArea>
 
-      {/* Floating Create Button */}
+      {/* Professional Floating Action Button */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogTrigger asChild>
           <Button 
             onClick={handleAddServiceClick}
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 z-50 border-2 border-white dark:border-gray-800"
+            className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-slate-900 hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all duration-200 z-50"
             size="icon"
             disabled={isLoading}
           >
-            <Plus className="h-6 w-6 text-white" />
+            <Plus className="h-5 w-5 text-white" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="w-[95vw] max-w-lg rounded-xl bg-gradient-to-b from-white to-blue-50 dark:from-gray-800 dark:to-gray-900">
+        <DialogContent className="w-[95vw] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-50 flex items-center gap-2">
-              {editingService ? <Edit2 className="h-5 w-5 text-blue-600" /> : <Plus className="h-5 w-5 text-blue-600" />}
-              {editingService ? "Edit Service" : "Create Service"}
+            <DialogTitle className="text-lg font-semibold">
+              {editingService ? "Edit Service" : "New Service"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="serviceName" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-blue-600" />
+              <Label htmlFor="serviceName" className="text-sm font-medium">
                 Service Name
               </Label>
               <Input
@@ -302,13 +335,13 @@ export default function ServicesPage() {
                 placeholder="Enter service name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
+                className="h-9"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Label htmlFor="description" className="text-sm font-medium">
                 Description
               </Label>
               <Textarea
@@ -316,15 +349,14 @@ export default function ServicesPage() {
                 placeholder="Describe the service..."
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200 min-h-[80px]"
+                className="min-h-[80px] resize-none"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-blue-600" />
-                Price ($)
+              <Label className="text-sm font-medium">
+                Price (USD)
               </Label>
               <Input
                 type="number"
@@ -333,7 +365,7 @@ export default function ServicesPage() {
                 min="0"
                 value={formData.price}
                 onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                className="bg-white/50 dark:bg-gray-800/50 border-blue-200 focus:border-blue-500 transition-colors duration-200"
+                className="h-9"
                 disabled={isLoading}
               />
             </div>
@@ -346,17 +378,17 @@ export default function ServicesPage() {
                   setEditingService(null)
                   setFormData({ name: "", description: "", price: "" })
                 }}
-                className="flex-1 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all duration-200"
+                className="flex-1"
                 disabled={isLoading}
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSaveService}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
                 disabled={!formData.name || !formData.price || isLoading}
               >
-                {isLoading ? "Saving..." : editingService ? "Update" : "Create"} Service
+                {isLoading ? "Saving..." : editingService ? "Update" : "Create"}
               </Button>
             </div>
           </div>
@@ -365,26 +397,23 @@ export default function ServicesPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-xl bg-gradient-to-b from-white to-red-50 dark:from-gray-800 dark:to-red-900/20">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
-              <Trash2 className="h-5 w-5" />
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-4 w-4" />
               Delete Service
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete &quot;{serviceToDelete?.name}&quot;? This action cannot be undone.
+            <AlertDialogDescription>
+              Are you sure you want to delete "{serviceToDelete?.name}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
-              className="border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-              disabled={isLoading}
-            >
+            <AlertDialogCancel disabled={isLoading}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDeleteService}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white"
               disabled={isLoading}
             >
               {isLoading ? "Deleting..." : "Delete"}

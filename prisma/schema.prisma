@@ -22,6 +22,8 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   services     Service[] 
+
+  Appointment Appointment[]
 }
 
 model Service {
@@ -34,4 +36,22 @@ model Service {
 
   userId      String   
   user        User     @relation(fields: [userId], references: [id])
+
+  Appointment Appointment[]
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  clientName  String
+  startTime   DateTime
+  duration    Int?      
+  
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
