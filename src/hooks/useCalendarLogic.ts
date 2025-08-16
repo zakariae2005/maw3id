@@ -10,12 +10,12 @@ import {
   setMinutes,
   getHours,
   getMinutes,
-  isSameDay,
   startOfDay,
 } from "date-fns"
-import { useToast } from "@/hooks/use-toast"
+
 import { useAppointment } from "@/store/useAppointment"
 import { useService } from "@/store/useService"
+
 
 interface CalendarAppointment {
   id: string
@@ -70,8 +70,7 @@ export function useCalendarLogic({
   
   // Dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  
-  const { toast } = useToast()
+
 
   // Store hooks
   const { 
@@ -204,50 +203,40 @@ export function useCalendarLogic({
 
   // Appointment creation
   const handleCreateAppointment = async () => {
-    try {
-      if (!newAppointment.clientName || !newAppointment.serviceId) {
-        toast({
-          
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const startTime = setMinutes(
-        setHours(newAppointment.appointmentDate, parseInt(newAppointment.startHour)),
-        parseInt(newAppointment.startMinute)
-      )
-
-      await createAppointment({
-        clientName: newAppointment.clientName,
-        serviceId: newAppointment.serviceId,
-        startTime,
-        duration: parseInt(newAppointment.duration)
-      })
-
-      setNewAppointment({
-        clientName: "",
-        serviceId: "",
-        appointmentDate: selectedDate,
-        startHour: "9",
-        startMinute: "0",
-        duration: "30",
-      })
-      setIsCreateDialogOpen(false)
-
-      toast({
-        title: "Success",
-        description: "Appointment created successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create appointment",
-        variant: "destructive",
-      })
+  try {
+    if (!newAppointment.clientName || !newAppointment.serviceId) {
+      console.error("Please fill in all required fields")
+      return
     }
+
+    const startTime = setMinutes(
+      setHours(newAppointment.appointmentDate, parseInt(newAppointment.startHour)),
+      parseInt(newAppointment.startMinute)
+    )
+
+    await createAppointment({
+      clientName: newAppointment.clientName,
+      serviceId: newAppointment.serviceId,
+      startTime,
+      duration: parseInt(newAppointment.duration),
+    })
+
+    setNewAppointment({
+      clientName: "",
+      serviceId: "",
+      appointmentDate: selectedDate,
+      startHour: "9",
+      startMinute: "0",
+      duration: "30",
+    })
+    setIsCreateDialogOpen(false)
+
+    console.log("✅ Appointment created successfully")
+  } catch (error) {
+    console.error("❌ Failed to create appointment", error)
   }
+}
+
 
   // Utility functions for desktop view
   const getAppointmentPosition = (appointment: CalendarAppointment, slotTime: Date) => {
